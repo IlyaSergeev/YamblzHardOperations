@@ -49,7 +49,7 @@ public class ArtistView extends View
     private Picasso picasso;
 
     private Artist artist;
-    private String descriptionText;
+    private String descriptionText = "";
 
     private int cardTopPadding;
     private int cardBottomPadding;
@@ -60,6 +60,9 @@ public class ArtistView extends View
     private int textLRPadding;
 
     private float titleTextHeight = 0f;
+
+    private StaticLayout titleStaticLayout;
+    private StaticLayout descriptionStaticLayout;
 
     public ArtistView(Context context)
     {
@@ -195,18 +198,12 @@ public class ArtistView extends View
         }
 
         //draw title
-        StaticLayout titleStaticLayout = getStaticLayout(artist.getName(),
-                                                         getWidth() - textLRPadding,
-                                                         titlePaint);
         canvas.save();
         canvas.translate(textLRPadding, cardTopPadding + posterHeight + posterTextMargin);
         titleStaticLayout.draw(canvas);
         canvas.restore();
 
         //draw description
-        StaticLayout descriptionStaticLayout = getStaticLayout(descriptionText,
-                                                               getWidth() - textLRPadding,
-                                                               descriptionPaint);
         canvas.save();
         canvas.translate(textLRPadding,
                          cardTopPadding + posterHeight + posterTextMargin + titleTextHeight + titleDescriptionMargin);
@@ -228,11 +225,13 @@ public class ArtistView extends View
         int width = resolveSizeAndState(getSuggestedMinimumWidth(), widthMeasureSpec, 1);
         int textWidth = width - (2 * textLRPadding);
 
-        titleTextHeight = getStaticLayout(artist.getName(), textWidth, titlePaint).getHeight();
-        float descriptionTextHeight = getStaticLayout(descriptionText,
-                                                      textWidth,
-                                                      descriptionPaint)
-                .getHeight();
+        titleStaticLayout = getStaticLayout(artist.getName(), textWidth, titlePaint);
+        titleTextHeight = titleStaticLayout.getHeight();
+
+        descriptionStaticLayout = getStaticLayout(descriptionText,
+                                                  textWidth,
+                                                  descriptionPaint);
+        float descriptionTextHeight = descriptionStaticLayout.getHeight();
 
         int height = 0;
         height += posterHeight;
