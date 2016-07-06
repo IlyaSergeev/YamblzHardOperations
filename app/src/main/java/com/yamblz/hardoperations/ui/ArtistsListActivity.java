@@ -75,9 +75,7 @@ public class ArtistsListActivity extends AppCompatActivity implements LoaderMana
         progressBar.setVisibility(View.GONE);
         recyclerView.setVisibility(View.VISIBLE);
 
-        ArtistsAdapter adapter = new ArtistsAdapter(data,
-                                                    Picasso.with(this),
-                                                    getResources());
+        ArtistsAdapter adapter = new ArtistsAdapter(data);
         recyclerView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
