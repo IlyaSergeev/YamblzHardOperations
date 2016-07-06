@@ -19,6 +19,7 @@ import android.view.View;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
+import com.squareup.picasso.Transformation;
 import com.yamblz.hardoperations.R;
 import com.yamblz.hardoperations.model.Artist;
 import com.yamblz.hardoperations.utils.BitmapUtils;
@@ -33,6 +34,7 @@ public class ArtistView extends View
     private static final int WHITE_COLOR = 0xFFFFFF;
     private static final int PALETTE_POPULATION = 100;
 
+    private final GetPaletteTransformation paletteTransformation = new GetPaletteTransformation();
     private final Palette defaultPalette = Palette.from(Collections.singletonList(new Palette.Swatch(
             WHITE_COLOR,
             PALETTE_POPULATION)));
@@ -44,9 +46,11 @@ public class ArtistView extends View
     private int defaultTextColor;
     private int defaultBackgroundColor;
 
-    private Bitmap posterBitmap;
-    private ImageLoadTarget imageLoadTarget;
     private Picasso picasso;
+    private ImageLoadTarget imageLoadTarget;
+    private Bitmap posterBitmap;
+    @NonNull
+    private Palette palette = defaultPalette;
 
     private Artist artist;
     private String descriptionText = "";
@@ -148,7 +152,10 @@ public class ArtistView extends View
             imageLoadTarget = null;
         }
         imageLoadTarget = new ImageLoadTarget();
-        picasso.load(artist.getCover().getBigImageUrl()).into(imageLoadTarget);
+        palette = defaultPalette;
+        picasso.load(artist.getCover().getBigImageUrl())
+               .transform(paletteTransformation)
+               .into(imageLoadTarget);
     }
 
     private void setPosterBitmap(Bitmap bitmap)
@@ -168,7 +175,6 @@ public class ArtistView extends View
         }
 
         //Draw background
-        Palette palette = getPalette();
         canvas.drawRect(0, 0, getWidth(), getHeight(), getRectPaint(palette.getLightVibrantColor(
                 defaultBackgroundColor)));
 
@@ -262,19 +268,6 @@ public class ArtistView extends View
         return rectPaint;
     }
 
-    private Palette getPalette()
-    {
-        if (posterBitmap != null && !posterBitmap.isRecycled())
-        {
-            //TODO need optimize
-            return Palette.from(posterBitmap).generate();
-        }
-        else
-        {
-            return defaultPalette;
-        }
-    }
-
     private final class ImageLoadTarget implements Target
     {
         @Override
@@ -295,6 +288,22 @@ public class ArtistView extends View
         public void onPrepareLoad(Drawable placeHolderDrawable)
         {
             setPosterBitmap(null);
+        }
+    }
+
+    private final class GetPaletteTransformation implements Transformation
+    {
+        @Override
+        public Bitmap transform(Bitmap source)
+        {
+            palette = Palette.from(source).generate();
+            return source;
+        }
+
+        @Override
+        public String key()
+        {
+            return "ImageTransformation";
         }
     }
 }
