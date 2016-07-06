@@ -169,7 +169,7 @@ public class ArtistView extends View
         int width = resolveSizeAndState(getSuggestedMinimumWidth(), widthMeasureSpec, 1);
 
         int textWidth = width - (2 * posterLRTextPadding);
-        //TODO add paddings
+
         int height = 0;
         height += getResources().getDimensionPixelOffset(R.dimen.poster_height);
         height += getTextHeight(artist.getName(), textWidth, titlePaint);
@@ -251,23 +251,26 @@ public class ArtistView extends View
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from)
         {
-            posterBitmap = bitmap;
             imageLoadTarget = null;
-            invalidate();
+            updateBitmap(bitmap);
         }
 
         @Override
         public void onBitmapFailed(Drawable errorDrawable)
         {
-            posterBitmap = null;
             imageLoadTarget = null;
-            invalidate();
+            updateBitmap(null);
         }
 
         @Override
         public void onPrepareLoad(Drawable placeHolderDrawable)
         {
-            posterBitmap = null;
+            updateBitmap(null);
+        }
+
+        private void updateBitmap(Bitmap bitmap)
+        {
+            posterBitmap = bitmap;
             invalidate();
         }
     }
