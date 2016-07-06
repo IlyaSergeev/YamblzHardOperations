@@ -1,7 +1,9 @@
-package com.yamblz.hardoperations;
+package com.yamblz.hardoperations.ui;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import com.yamblz.hardoperations.R;
 
 public class MainActivity extends AppCompatActivity
 {
