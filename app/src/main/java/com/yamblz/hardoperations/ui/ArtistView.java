@@ -2,6 +2,7 @@ package com.yamblz.hardoperations.ui;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -25,7 +26,7 @@ public class ArtistView extends View
 
     private TextPaint titlePaint;
     private TextPaint descriptionPaint;
-
+    private Bitmap posterBitmap;
 
     public ArtistView(Context context)
     {
@@ -90,11 +91,20 @@ public class ArtistView extends View
         int posterTopPadding = getResources().getDimensionPixelOffset(R.dimen.artist_card_top_padding);
 
         int imageHeight = getResources().getDimensionPixelOffset(R.dimen.poster_height);
-        canvas.drawRect(posterLRPosterPadding,
-                        posterTopPadding,
-                        getWidth() - posterLRPosterPadding,
-                        imageHeight,
-                        getRectPaint());
+        if (posterBitmap == null)
+        {
+            canvas.drawRect(posterLRPosterPadding,
+                            posterTopPadding,
+                            getWidth() - posterLRPosterPadding,
+                            imageHeight,
+                            getRectPaint());
+        }
+        else
+        {
+            Bitmap scaledBitmap = Bitmap.createScaledBitmap(posterBitmap, getWidth() - (2 * posterLRPosterPadding), imageHeight, true);
+            canvas.drawBitmap(scaledBitmap, posterLRPosterPadding, posterTopPadding, getBitmapPaint());
+            scaledBitmap.recycle();
+        }
 
         //draw title
         float titleTextHeight = getTextHeight(artist.getName(), getWidth(), titlePaint);
@@ -170,6 +180,15 @@ public class ArtistView extends View
         Paint rectPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         rectPaint.setColor(Color.argb(0x60, 0xff, 0x00, 0x00));
         return rectPaint;
+    }
+
+    private Paint getBitmapPaint()
+    {
+        Paint bitmapPaint = new Paint();
+        bitmapPaint.setAntiAlias(true);
+        bitmapPaint.setFilterBitmap(true);
+        bitmapPaint.setDither(true);
+        return bitmapPaint;
     }
 
     private String getArtistDescription()
