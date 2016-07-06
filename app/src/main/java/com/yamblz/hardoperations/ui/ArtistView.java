@@ -31,6 +31,7 @@ import java.util.Collections;
 public class ArtistView extends View
 {
     private static final int WHITE_COLOR = 0xFFFFFF;
+    private static final int PALETTE_POPULATION = 100;
 
     private TextPaint titlePaint;
     private TextPaint descriptionPaint;
@@ -272,7 +273,7 @@ public class ArtistView extends View
     @NonNull
     private static Palette getDefaultPalette()
     {
-        Palette.Swatch swatch = new Palette.Swatch(WHITE_COLOR, 100);
+        Palette.Swatch swatch = new Palette.Swatch(WHITE_COLOR, PALETTE_POPULATION);
         return Palette.from(Collections.singletonList(swatch));
     }
 
