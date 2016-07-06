@@ -5,15 +5,20 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 import com.yamblz.hardoperations.R;
 import com.yamblz.hardoperations.model.Artist;
 
@@ -28,22 +33,25 @@ public class ArtistView extends View
     private TextPaint descriptionPaint;
     private Bitmap posterBitmap;
 
+    private ImageLoadTarget imageLoadTarget;
+    private Picasso picasso;
+
     public ArtistView(Context context)
     {
         super(context);
-        init();
+        init(context);
     }
 
     public ArtistView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
-        init();
+        init(context);
     }
 
     public ArtistView(Context context, AttributeSet attrs, int defStyleAttr)
     {
         super(context, attrs, defStyleAttr);
-        init();
+        init(context);
     }
 
     @SuppressWarnings("unused")
@@ -51,11 +59,13 @@ public class ArtistView extends View
     public ArtistView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes)
     {
         super(context, attrs, defStyleAttr, defStyleRes);
-        init();
+        init(context);
     }
 
-    private void init()
+    private void init(@NonNull Context context)
     {
+        picasso = Picasso.with(context);
+
         float titleFontSize = getResources().getDimensionPixelSize(R.dimen.artist_card_title_font_size);
         titlePaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
@@ -66,12 +76,19 @@ public class ArtistView extends View
         descriptionPaint.setTextSize(descriptionFontSize);
     }
 
-
     public void setArtist(Artist artist)
     {
         this.artist = artist;
         invalidate();
         requestLayout();
+
+        if (imageLoadTarget != null)
+        {
+            Picasso.with(getContext()).cancelRequest(imageLoadTarget);
+            imageLoadTarget = null;
+        }
+        imageLoadTarget = new ImageLoadTarget();
+        picasso.load(artist.getCover().getBigImageUrl()).into(imageLoadTarget);
     }
 
     @Override
@@ -101,8 +118,13 @@ public class ArtistView extends View
         }
         else
         {
-            Bitmap scaledBitmap = Bitmap.createScaledBitmap(posterBitmap, getWidth() - (2 * posterLRPosterPadding), imageHeight, true);
-            canvas.drawBitmap(scaledBitmap, posterLRPosterPadding, posterTopPadding, getBitmapPaint());
+            Bitmap scaledBitmap = scaleBitmap(posterBitmap,
+                                              getWidth() - (2 * posterLRPosterPadding),
+                                              imageHeight);
+            canvas.drawBitmap(scaledBitmap,
+                              posterLRPosterPadding,
+                              posterTopPadding,
+                              getBitmapPaint());
             scaledBitmap.recycle();
         }
 
@@ -205,5 +227,48 @@ public class ArtistView extends View
                                                                    artist.getTracksCount(),
                                                                    artist.getTracksCount());
         return descriptionText;
+    }
+
+    private static Bitmap scaleBitmap(@NonNull Bitmap image, int width, int height)
+    {
+        Bitmap background = Bitmap.createBitmap(width, height, image.getConfig());
+        float originalWidth = image.getWidth();
+        float originalHeight = image.getHeight();
+        Canvas canvas = new Canvas(background);
+        float scale = width / originalWidth;
+        float xTranslation = 0.0f, yTranslation = (height - originalHeight * scale) / 2.0f;
+        Matrix transformation = new Matrix();
+        transformation.postTranslate(xTranslation, yTranslation);
+        transformation.preScale(scale, scale);
+        Paint paint = new Paint();
+        paint.setFilterBitmap(true);
+        canvas.drawBitmap(image, transformation, paint);
+        return background;
+    }
+
+    private final class ImageLoadTarget implements Target
+    {
+        @Override
+        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from)
+        {
+            posterBitmap = bitmap;
+            imageLoadTarget = null;
+            invalidate();
+        }
+
+        @Override
+        public void onBitmapFailed(Drawable errorDrawable)
+        {
+            posterBitmap = null;
+            imageLoadTarget = null;
+            invalidate();
+        }
+
+        @Override
+        public void onPrepareLoad(Drawable placeHolderDrawable)
+        {
+            posterBitmap = null;
+            invalidate();
+        }
     }
 }
