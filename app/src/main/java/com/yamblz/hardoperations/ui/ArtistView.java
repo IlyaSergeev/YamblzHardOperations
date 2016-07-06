@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -21,6 +20,7 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 import com.yamblz.hardoperations.R;
 import com.yamblz.hardoperations.model.Artist;
+import com.yamblz.hardoperations.utils.BitmapUtils;
 
 /**
  * Created by i-sergeev on 06.07.16
@@ -91,6 +91,12 @@ public class ArtistView extends View
         picasso.load(artist.getCover().getBigImageUrl()).into(imageLoadTarget);
     }
 
+    private void setPosterBitmap(Bitmap bitmap)
+    {
+        posterBitmap = bitmap;
+        invalidate();
+    }
+
     @Override
     protected void onDraw(Canvas canvas)
     {
@@ -118,9 +124,9 @@ public class ArtistView extends View
         }
         else
         {
-            Bitmap scaledBitmap = scaleBitmap(posterBitmap,
-                                              getWidth() - (2 * posterLRPosterPadding),
-                                              imageHeight);
+            Bitmap scaledBitmap = BitmapUtils.fitToCenterBitmap(posterBitmap,
+                                                                getWidth() - (2 * posterLRPosterPadding),
+                                                                imageHeight);
             canvas.drawBitmap(scaledBitmap,
                               posterLRPosterPadding,
                               posterTopPadding,
@@ -229,49 +235,26 @@ public class ArtistView extends View
         return descriptionText;
     }
 
-    private static Bitmap scaleBitmap(@NonNull Bitmap image, int width, int height)
-    {
-        Bitmap background = Bitmap.createBitmap(width, height, image.getConfig());
-        float originalWidth = image.getWidth();
-        float originalHeight = image.getHeight();
-        Canvas canvas = new Canvas(background);
-        float scale = width / originalWidth;
-        float xTranslation = 0.0f, yTranslation = (height - originalHeight * scale) / 2.0f;
-        Matrix transformation = new Matrix();
-        transformation.postTranslate(xTranslation, yTranslation);
-        transformation.preScale(scale, scale);
-        Paint paint = new Paint();
-        paint.setFilterBitmap(true);
-        canvas.drawBitmap(image, transformation, paint);
-        return background;
-    }
-
     private final class ImageLoadTarget implements Target
     {
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from)
         {
             imageLoadTarget = null;
-            updateBitmap(bitmap);
+            setPosterBitmap(bitmap);
         }
 
         @Override
         public void onBitmapFailed(Drawable errorDrawable)
         {
             imageLoadTarget = null;
-            updateBitmap(null);
+            setPosterBitmap(null);
         }
 
         @Override
         public void onPrepareLoad(Drawable placeHolderDrawable)
         {
-            updateBitmap(null);
-        }
-
-        private void updateBitmap(Bitmap bitmap)
-        {
-            posterBitmap = bitmap;
-            invalidate();
+            setPosterBitmap(null);
         }
     }
 }
