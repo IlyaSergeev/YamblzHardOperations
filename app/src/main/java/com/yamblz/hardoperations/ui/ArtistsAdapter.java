@@ -75,6 +75,9 @@ public class ArtistsAdapter extends RecyclerView.Adapter<ArtistsAdapter.ArtistVH
         @BindView(R.id.artist_description)
         TextView descriptionTextView;
 
+        @BindView(R.id.artist_root_view)
+        View rootView;
+
         public ArtistVH(View itemView)
         {
             super(itemView);
@@ -86,6 +89,7 @@ public class ArtistsAdapter extends RecyclerView.Adapter<ArtistsAdapter.ArtistVH
             picasso.load(artist.getCover().getBigImageUrl()).into(posterImageView);
             nameTextView.setText(artist.getName());
             descriptionTextView.setText(artist.getDescription());
+            rootView.setBackgroundResource(android.R.color.holo_red_dark);
         }
     }
 }
