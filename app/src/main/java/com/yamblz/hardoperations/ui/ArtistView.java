@@ -68,6 +68,9 @@ public class ArtistView extends View
     private StaticLayout titleStaticLayout;
     private StaticLayout descriptionStaticLayout;
 
+    private Paint backgroundPaint;
+    private final Paint posterPlaceholderPaint = getRectPaint1(WHITE_COLOR);
+
     public ArtistView(Context context)
     {
         super(context);
@@ -129,6 +132,8 @@ public class ArtistView extends View
         posterPaint.setAntiAlias(true);
         posterPaint.setFilterBitmap(true);
         posterPaint.setDither(true);
+
+        backgroundPaint = getRectPaint1(defaultBackgroundColor);
     }
 
     public void setArtist(@NonNull Artist artist)
@@ -160,8 +165,27 @@ public class ArtistView extends View
 
     private void setPosterBitmap(Bitmap bitmap)
     {
-        posterBitmap = bitmap;
+        if (posterBitmap != null)
+        {
+            posterBitmap.recycle();
+        }
+        if (bitmap != null)
+        {
+            posterBitmap = BitmapUtils.fitToCenterBitmap(bitmap,
+                                                         getWidth() - (2 * posterLRPosterPadding),
+                                                         posterHeight);
+        }
+        else
+        {
+            posterBitmap = null;
+        }
         invalidate();
+    }
+
+    private void setPalette(@NonNull Palette palette)
+    {
+        this.palette = palette;
+        backgroundPaint = getRectPaint1(palette.getLightVibrantColor(defaultBackgroundColor));
     }
 
     @Override
@@ -175,8 +199,7 @@ public class ArtistView extends View
         }
 
         //Draw background
-        canvas.drawRect(0, 0, getWidth(), getHeight(), getRectPaint(palette.getLightVibrantColor(
-                defaultBackgroundColor)));
+        canvas.drawRect(0, 0, getWidth(), getHeight(), backgroundPaint);
 
         int textColor = palette.getDarkMutedColor(defaultTextColor);
         titlePaint.setColor(palette.getDarkMutedColor(textColor));
@@ -189,18 +212,14 @@ public class ArtistView extends View
                             cardTopPadding,
                             getWidth() - posterLRPosterPadding,
                             posterHeight,
-                            getRectPaint(WHITE_COLOR));
+                            posterPlaceholderPaint);
         }
         else
         {
-            Bitmap scaledBitmap = BitmapUtils.fitToCenterBitmap(posterBitmap,
-                                                                getWidth() - (2 * posterLRPosterPadding),
-                                                                posterHeight);
-            canvas.drawBitmap(scaledBitmap,
+            canvas.drawBitmap(posterBitmap,
                               posterLRPosterPadding,
                               cardTopPadding,
                               posterPaint);
-            scaledBitmap.recycle();
         }
 
         //draw title
@@ -261,7 +280,7 @@ public class ArtistView extends View
         return new StaticLayout(text, textPaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, false);
     }
 
-    private Paint getRectPaint(int color)
+    private Paint getRectPaint1(int color)
     {
         Paint rectPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         rectPaint.setColor(color);
@@ -296,7 +315,7 @@ public class ArtistView extends View
         @Override
         public Bitmap transform(Bitmap source)
         {
-            palette = Palette.from(source).generate();
+            setPalette(Palette.from(source).generate());
             return source;
         }
 
