@@ -165,10 +165,6 @@ public class ArtistView extends View
 
     private void setPosterBitmap(Bitmap bitmap)
     {
-        if (posterBitmap != null)
-        {
-            posterBitmap.recycle();
-        }
         posterBitmap = bitmap;
         invalidate();
     }
