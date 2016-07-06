@@ -72,12 +72,6 @@ public class ArtistsAdapter extends RecyclerView.Adapter<ArtistsAdapter.ArtistVH
         @BindView(R.id.artist_name)
         TextView nameTextView;
 
-        @BindView(R.id.artist_albums)
-        TextView albumsTextView;
-
-        @BindView(R.id.artist_songs)
-        TextView songsTextView;
-
         @BindView(R.id.artist_description)
         TextView descriptionTextView;
 
@@ -92,12 +86,6 @@ public class ArtistsAdapter extends RecyclerView.Adapter<ArtistsAdapter.ArtistVH
             picasso.load(artist.getCover().getBigImageUrl()).into(posterImageView);
             nameTextView.setText(artist.getName());
             descriptionTextView.setText(artist.getDescription());
-            albumsTextView.setText(resources.getQuantityString(R.plurals.artistAlbums,
-                                                               artist.getAlbumsCount(),
-                                                               artist.getAlbumsCount()));
-            songsTextView.setText(resources.getQuantityString(R.plurals.artistTracks,
-                                                              artist.getTracksCount(),
-                                                              artist.getTracksCount()));
         }
     }
 }
