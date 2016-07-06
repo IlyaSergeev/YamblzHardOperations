@@ -9,4 +9,7 @@
     <dimen name="artist_card_lr_text_padding">16dp</dimen>
     <dimen name="artist_card_poster_text_margin">8dp</dimen>
     <dimen name="artist_card_title_desc_margin">8dp</dimen>
+
+    <color name="default_background_color">@android:color/white</color>
+    <color name="default_text_color">@android:color/black</color>
 </resources>

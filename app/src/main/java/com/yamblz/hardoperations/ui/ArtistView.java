@@ -2,14 +2,15 @@ package com.yamblz.hardoperations.ui;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.v7.graphics.Palette;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
@@ -22,17 +23,22 @@ import com.yamblz.hardoperations.R;
 import com.yamblz.hardoperations.model.Artist;
 import com.yamblz.hardoperations.utils.BitmapUtils;
 
+import java.util.Collections;
+
 /**
  * Created by i-sergeev on 06.07.16
  */
 public class ArtistView extends View
 {
-    private Artist artist;
+    private static final int WHITE_COLOR = 0xFFFFFF;
 
     private TextPaint titlePaint;
     private TextPaint descriptionPaint;
-    private Bitmap posterBitmap;
+    private int defaultTextColor;
+    private int defaultBackgroundColor;
 
+    private Artist artist;
+    private Bitmap posterBitmap;
     private ImageLoadTarget imageLoadTarget;
     private Picasso picasso;
 
@@ -66,14 +72,23 @@ public class ArtistView extends View
     {
         picasso = Picasso.with(context);
 
-        float titleFontSize = getResources().getDimensionPixelSize(R.dimen.artist_card_title_font_size);
+        Resources resources = getResources();
+
+        //noinspection deprecation
+        defaultTextColor = resources.getColor(R.color.default_text_color);
+        //noinspection deprecation
+        defaultBackgroundColor = resources.getColor(R.color.default_background_color);
+
+        float titleFontSize = resources.getDimensionPixelSize(R.dimen.artist_card_title_font_size);
         titlePaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
         titlePaint.setTextSize(titleFontSize);
+        titlePaint.setColor(defaultTextColor);
 
-        float descriptionFontSize = getResources().getDimensionPixelSize(R.dimen.artist_card_font_size);
+        float descriptionFontSize = resources.getDimensionPixelSize(R.dimen.artist_card_font_size);
         descriptionPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         descriptionPaint.setTextSize(descriptionFontSize);
+        descriptionPaint.setColor(defaultTextColor);
     }
 
     public void setArtist(Artist artist)
@@ -106,8 +121,15 @@ public class ArtistView extends View
         {
             return;
         }
-        //draw background
-        canvas.drawRect(0, 0, getWidth(), getHeight(), getRectPaint());
+
+        //Draw background
+        Palette palette = getPalette();
+        canvas.drawRect(0, 0, getWidth(), getHeight(), getRectPaint(palette.getLightVibrantColor(
+                defaultBackgroundColor)));
+
+        int textColor = palette.getDarkMutedColor(defaultTextColor);
+        titlePaint.setColor(palette.getDarkMutedColor(textColor));
+        descriptionPaint.setColor(textColor);
 
         //draw poster
         int posterLRPosterPadding = getResources().getDimensionPixelOffset(R.dimen.artist_card_top_padding);
@@ -120,7 +142,7 @@ public class ArtistView extends View
                             posterTopPadding,
                             getWidth() - posterLRPosterPadding,
                             imageHeight,
-                            getRectPaint());
+                            getRectPaint(WHITE_COLOR));
         }
         else
         {
@@ -203,10 +225,10 @@ public class ArtistView extends View
         return new StaticLayout(text, textPaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, false);
     }
 
-    private Paint getRectPaint()
+    private Paint getRectPaint(int color)
     {
         Paint rectPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        rectPaint.setColor(Color.argb(0x60, 0xff, 0x00, 0x00));
+        rectPaint.setColor(color);
         return rectPaint;
     }
 
@@ -233,6 +255,25 @@ public class ArtistView extends View
                                                                    artist.getTracksCount(),
                                                                    artist.getTracksCount());
         return descriptionText;
+    }
+
+    private Palette getPalette()
+    {
+        if (posterBitmap != null && !posterBitmap.isRecycled())
+        {
+            return Palette.from(posterBitmap).generate();
+        }
+        else
+        {
+            return getDefaultPalette();
+        }
+    }
+
+    @NonNull
+    private static Palette getDefaultPalette()
+    {
+        Palette.Swatch swatch = new Palette.Swatch(WHITE_COLOR, 100);
+        return Palette.from(Collections.singletonList(swatch));
     }
 
     private final class ImageLoadTarget implements Target
