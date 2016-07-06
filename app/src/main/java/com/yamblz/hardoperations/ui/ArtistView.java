@@ -169,16 +169,7 @@ public class ArtistView extends View
         {
             posterBitmap.recycle();
         }
-        if (bitmap != null)
-        {
-            posterBitmap = BitmapUtils.fitToCenterBitmap(bitmap,
-                                                         getWidth() - (2 * posterLRPosterPadding),
-                                                         posterHeight);
-        }
-        else
-        {
-            posterBitmap = null;
-        }
+        posterBitmap = bitmap;
         invalidate();
     }
 
@@ -316,7 +307,11 @@ public class ArtistView extends View
         public Bitmap transform(Bitmap source)
         {
             setPalette(Palette.from(source).generate());
-            return source;
+            Bitmap scaledBitmap = BitmapUtils.fitToCenterBitmap(source,
+                                                                getWidth() - (2 * posterLRPosterPadding),
+                                                                posterHeight);
+            source.recycle();
+            return scaledBitmap;
         }
 
         @Override
