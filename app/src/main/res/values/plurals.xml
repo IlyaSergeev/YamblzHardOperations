@@ -2,11 +2,11 @@
 <resources>
     <plurals name="artistAlbums">
         <item quantity="one">%d album</item>
-        <item quantity="many">%d albums</item>
+        <item quantity="other">%d albums</item>
     </plurals>
 
     <plurals name="artistTracks">
         <item quantity="one">%d track</item>
-        <item quantity="many">%d tracks</item>
+        <item quantity="other">%d tracks</item>
     </plurals>
 </resources>
