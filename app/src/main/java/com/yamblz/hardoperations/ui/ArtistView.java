@@ -43,6 +43,9 @@ public class ArtistView extends View
     private ImageLoadTarget imageLoadTarget;
     private Picasso picasso;
 
+    private Paint mBitmapPaint = new Paint();
+    private Paint mRectPaint = new Paint();
+
     public ArtistView(Context context)
     {
         super(context);
@@ -228,18 +231,19 @@ public class ArtistView extends View
 
     private Paint getRectPaint(int color)
     {
-        Paint rectPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        rectPaint.setColor(color);
-        return rectPaint;
+        mRectPaint.reset();
+        mRectPaint.setAntiAlias(true);
+        mRectPaint.setColor(color);
+        return mRectPaint;
     }
 
     private Paint getBitmapPaint()
     {
-        Paint bitmapPaint = new Paint();
-        bitmapPaint.setAntiAlias(true);
-        bitmapPaint.setFilterBitmap(true);
-        bitmapPaint.setDither(true);
-        return bitmapPaint;
+        mBitmapPaint.reset();
+        mBitmapPaint.setAntiAlias(true);
+        mBitmapPaint.setFilterBitmap(true);
+        mBitmapPaint.setDither(true);
+        return mBitmapPaint;
     }
 
     private String getArtistDescription()
@@ -248,14 +252,15 @@ public class ArtistView extends View
         {
             return "";
         }
-        String descriptionText = artist.getDescription() + "\n";
-        descriptionText += "\n" + getResources().getQuantityString(R.plurals.artistAlbums,
-                                                                   artist.getAlbumsCount(),
-                                                                   artist.getAlbumsCount());
-        descriptionText += "\n" + getResources().getQuantityString(R.plurals.artistTracks,
-                                                                   artist.getTracksCount(),
-                                                                   artist.getTracksCount());
-        return descriptionText;
+        StringBuilder sb = new StringBuilder();
+        sb.append(artist.getDescription()).append("\n").append("\n").append(
+                getResources().getQuantityString(R.plurals.artistAlbums,
+                        artist.getAlbumsCount(),
+                        artist.getAlbumsCount())).append("\n").append(
+                getResources().getQuantityString(R.plurals.artistTracks,
+                artist.getTracksCount(),
+                artist.getTracksCount()));
+        return sb.toString();
     }
 
     private Palette getPalette()
