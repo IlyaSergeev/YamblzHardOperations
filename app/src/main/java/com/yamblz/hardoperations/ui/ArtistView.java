@@ -43,6 +43,28 @@ public class ArtistView extends View
     private ImageLoadTarget imageLoadTarget;
     private Picasso picasso;
 
+    private Palette palette;
+    private Paint backgroundPaint;
+    private Paint whiteRectPaint;
+    private int h;
+    private int w;
+
+    private int posterLRPosterPadding;
+    private int posterTopPadding;
+    private int imageHeight;
+
+    private Bitmap scaledBitmap;
+    private Paint bitmapPaint;
+
+    private float titleTextHeight;
+    private int posterTextMargin;
+    private int textLRPadding;
+
+    private StaticLayout titleStaticLayout;
+    private StaticLayout descriptionStaticLayout;
+
+    private int titleDescMargin;
+
     public ArtistView(Context context)
     {
         super(context);
@@ -90,6 +112,26 @@ public class ArtistView extends View
         descriptionPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         descriptionPaint.setTextSize(descriptionFontSize);
         descriptionPaint.setColor(defaultTextColor);
+
+        palette = getPalette();
+        backgroundPaint = getRectPaint(palette.getLightVibrantColor(
+                defaultBackgroundColor));
+        whiteRectPaint = getRectPaint(WHITE_COLOR);
+        int textColor = palette.getDarkMutedColor(defaultTextColor);
+        titlePaint.setColor(palette.getDarkMutedColor(textColor));
+        descriptionPaint.setColor(textColor);
+
+        posterLRPosterPadding = getResources().getDimensionPixelOffset(R.dimen.artist_card_top_padding);
+        posterTopPadding = getResources().getDimensionPixelOffset(R.dimen.artist_card_top_padding);
+
+        imageHeight = getResources().getDimensionPixelOffset(R.dimen.poster_height);
+
+        bitmapPaint = getBitmapPaint();
+
+        posterTextMargin = getResources().getDimensionPixelOffset(R.dimen.artist_card_poster_text_margin);
+        textLRPadding = getResources().getDimensionPixelOffset(R.dimen.artist_card_lr_text_padding);
+
+        titleDescMargin = getResources().getDimensionPixelOffset(R.dimen.artist_card_title_desc_margin);
     }
 
     public void setArtist(Artist artist)
@@ -110,7 +152,27 @@ public class ArtistView extends View
     private void setPosterBitmap(Bitmap bitmap)
     {
         posterBitmap = bitmap;
-        invalidate();
+        if (posterBitmap != null)
+        {
+            scaledBitmap = BitmapUtils.fitToCenterBitmap(posterBitmap,
+                    w - (2 * posterLRPosterPadding),
+                    imageHeight);
+            invalidate();
+        }
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        this.w = w;
+        this.h = h;
+        titleTextHeight = getTextHeight(artist.getName(), w, titlePaint);
+        titleStaticLayout = getStaticLayout(artist.getName(),
+                w - textLRPadding,
+                titlePaint);
+        descriptionStaticLayout = getStaticLayout(getArtistDescription(),
+                w - textLRPadding,
+                descriptionPaint);
     }
 
     @Override
@@ -124,58 +186,34 @@ public class ArtistView extends View
         }
 
         //Draw background
-        Palette palette = getPalette();
-        canvas.drawRect(0, 0, getWidth(), getHeight(), getRectPaint(palette.getLightVibrantColor(
-                defaultBackgroundColor)));
-
-        int textColor = palette.getDarkMutedColor(defaultTextColor);
-        titlePaint.setColor(palette.getDarkMutedColor(textColor));
-        descriptionPaint.setColor(textColor);
+        canvas.drawRect(0, 0, w, h, backgroundPaint);
 
         //draw poster
-        int posterLRPosterPadding = getResources().getDimensionPixelOffset(R.dimen.artist_card_top_padding);
-        int posterTopPadding = getResources().getDimensionPixelOffset(R.dimen.artist_card_top_padding);
-
-        int imageHeight = getResources().getDimensionPixelOffset(R.dimen.poster_height);
         if (posterBitmap == null)
         {
             canvas.drawRect(posterLRPosterPadding,
                             posterTopPadding,
                             getWidth() - posterLRPosterPadding,
                             imageHeight,
-                            getRectPaint(WHITE_COLOR));
+                            whiteRectPaint);
         }
         else
         {
-            Bitmap scaledBitmap = BitmapUtils.fitToCenterBitmap(posterBitmap,
-                                                                getWidth() - (2 * posterLRPosterPadding),
-                                                                imageHeight);
             canvas.drawBitmap(scaledBitmap,
                               posterLRPosterPadding,
                               posterTopPadding,
-                              getBitmapPaint());
-            scaledBitmap.recycle();
+                              bitmapPaint);
         }
 
         //draw title
-        float titleTextHeight = getTextHeight(artist.getName(), getWidth(), titlePaint);
-        int posterTextMargin = getResources().getDimensionPixelOffset(R.dimen.artist_card_poster_text_margin);
-        int textLRPadding = getResources().getDimensionPixelOffset(R.dimen.artist_card_lr_text_padding);
 
-        StaticLayout titleStaticLayout = getStaticLayout(artist.getName(),
-                                                         getWidth() - textLRPadding,
-                                                         titlePaint);
         canvas.save();
         canvas.translate(textLRPadding, posterTopPadding + imageHeight + posterTextMargin);
         titleStaticLayout.draw(canvas);
         canvas.restore();
 
         //draw description
-        int titleDescMargin = getResources().getDimensionPixelOffset(R.dimen.artist_card_title_desc_margin);
 
-        StaticLayout descriptionStaticLayout = getStaticLayout(getArtistDescription(),
-                                                               getWidth() - textLRPadding,
-                                                               descriptionPaint);
         canvas.save();
         canvas.translate(textLRPadding,
                          posterTopPadding + imageHeight + posterTextMargin + titleTextHeight + titleDescMargin);
