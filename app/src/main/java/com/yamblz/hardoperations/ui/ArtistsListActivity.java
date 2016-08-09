@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import com.android.debug.hv.ViewServer;
 import com.squareup.picasso.Picasso;
 import com.yamblz.hardoperations.R;
 import com.yamblz.hardoperations.model.Artist;
@@ -44,6 +45,15 @@ public class ArtistsListActivity extends AppCompatActivity implements LoaderMana
                 ARTISTS_LOADER_ID,
                 null,
                 this).forceLoad();
+
+        ViewServer.get(this).addWindow(this);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ViewServer.get(this).setFocusedWindow(this);
     }
 
     @Override
@@ -78,5 +88,11 @@ public class ArtistsListActivity extends AppCompatActivity implements LoaderMana
         ArtistsAdapter adapter = new ArtistsAdapter(data);
         recyclerView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ViewServer.get(this).removeWindow(this);
     }
 }
