@@ -118,9 +118,7 @@ public class ArtistView extends View {
         }
         imageLoadTarget = new ImageLoadTarget();
         picasso.load(artist.getCover().getBigImageUrl()).into(imageLoadTarget);
-        if (getWidth() != 0) {
-            updateText();
-        }
+        updateText();
     }
 
     @Override
@@ -130,6 +128,7 @@ public class ArtistView extends View {
     }
 
     private void updateText() {
+        if(getWidth()==0)return;
         titleStaticLayout = getStaticLayout(artist.getName(),
                 getWidth() - textLRPadding,
                 titlePaint);
@@ -149,6 +148,7 @@ public class ArtistView extends View {
         //draw poster
         int imageHeight = getResources().getDimensionPixelOffset(R.dimen.poster_height);
         if (bitmap != null) {
+            bitmapPallete = Palette.from(bitmap).generate();
             //scale bitmap
             int posterLRPosterPadding = getResources().getDimensionPixelOffset(R.dimen.artist_card_top_padding);
             Bitmap scaledBitmap = BitmapUtils.fitToCenterBitmap(posterBitmap,
@@ -156,8 +156,8 @@ public class ArtistView extends View {
                     imageHeight);
             // posterBitmap.recycle();
             posterBitmap = scaledBitmap;
-            bitmapPallete = Palette.from(posterBitmap).generate();
         }
+        updateText();
         invalidate();
     }
 
