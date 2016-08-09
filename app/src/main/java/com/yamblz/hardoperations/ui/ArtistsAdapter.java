@@ -24,53 +24,44 @@ import butterknife.ButterKnife;
 /**
  * Created by i-sergeev on 06.07.16
  */
-public class ArtistsAdapter extends RecyclerView.Adapter<ArtistsAdapter.ArtistVH>
-{
+public class ArtistsAdapter extends RecyclerView.Adapter<ArtistsAdapter.ArtistVH> {
     @NonNull
     private final Artist[] artists;
 
-    public ArtistsAdapter(@Nullable Artist[] artists)
-    {
-        if (artists == null)
-        {
+    public ArtistsAdapter(@Nullable Artist[] artists) {
+        if (artists == null) {
             artists = new Artist[0];
         }
         this.artists = artists;
     }
 
     @Override
-    public ArtistVH onCreateViewHolder(ViewGroup parent, int viewType)
-    {
+    public ArtistVH onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.artist_card, parent, false);
         return new ArtistVH(view);
     }
 
     @Override
-    public void onBindViewHolder(ArtistVH holder, int position)
-    {
+    public void onBindViewHolder(ArtistVH holder, int position) {
         holder.bind(artists[position]);
     }
 
     @Override
-    public int getItemCount()
-    {
+    public int getItemCount() {
         return artists.length;
     }
 
-    public class ArtistVH extends RecyclerView.ViewHolder
-    {
+    public class ArtistVH extends RecyclerView.ViewHolder {
         @BindView(R.id.artist_root_view)
         ArtistView artistView;
 
-        public ArtistVH(View itemView)
-        {
+        public ArtistVH(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
 
-        public void bind(@NonNull Artist artist)
-        {
+        public void bind(@NonNull Artist artist) {
             artistView.setArtist(artist);
         }
     }
