@@ -170,7 +170,7 @@ public class ArtistView extends View {
         canvas.translate(textLRPadding, posterTopPadding + imageHeight + posterTextMargin);
         titleStaticLayout.draw(canvas);
         canvas.restore();
-        
+
         canvas.save();
         canvas.translate(textLRPadding,
                 posterTopPadding + imageHeight + posterTextMargin + titleTextHeight + titleDescMargin);
