@@ -28,7 +28,6 @@ import com.yamblz.hardoperations.utils.BitmapUtils;
  * Created by i-sergeev on 06.07.16
  */
 public class ArtistView extends View {
-    private static final int WHITE_COLOR = 0xFFFFFF;
 
     private TextPaint titlePaint;
     private TextPaint descriptionPaint;
@@ -99,6 +98,7 @@ public class ArtistView extends View {
 
 
         rectPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        rectPaint.setColor(defaultBackgroundColor);
         bitmapPaint = new Paint();
         bitmapPaint.setAntiAlias(true);
         bitmapPaint.setFilterBitmap(true);
@@ -131,9 +131,8 @@ public class ArtistView extends View {
         if (artist == null) {
             return;
         }
-        if (posterBitmap == null) {
-            canvas.drawRect(0, 0, getWidth(), getHeight(), rectPaint);
-        } else {
+        canvas.drawRect(0, 0, getWidth(), getHeight(), rectPaint);
+        if (posterBitmap != null) {
             int height = getHeight();
             int width = getWidth();
             int left = width - posterLRPosterPadding;
@@ -220,17 +219,12 @@ public class ArtistView extends View {
             int textColor = palette.getDarkMutedColor(defaultTextColor);
             titlePaint.setColor(palette.getDarkMutedColor(textColor));
             descriptionPaint.setColor(textColor);
-
-            posterBitmap = BitmapUtils.fitToCenterBitmap(posterBitmap,
-                    getWidth() - (2 * posterLRPosterPadding),
-                    imageHeight);
             invalidate();
         }
 
         @Override
         public void onBitmapFailed(Drawable errorDrawable) {
             imageLoadTarget = null;
-            rectPaint.setColor(WHITE_COLOR);
         }
 
         @Override
