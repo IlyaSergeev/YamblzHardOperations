@@ -1,23 +1,21 @@
 package com.yamblz.hardoperations.ui;
 
+import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import com.squareup.picasso.Picasso;
 import com.yamblz.hardoperations.R;
 import com.yamblz.hardoperations.model.Artist;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class ArtistsListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Artist[]>
-{
+public class ArtistsListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Artist[]> {
 
     private static final int ARTISTS_LOADER_ID = 101;
 
@@ -28,8 +26,7 @@ public class ArtistsListActivity extends AppCompatActivity implements LoaderMana
     RecyclerView recyclerView;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_artists_list);
 
@@ -47,31 +44,26 @@ public class ArtistsListActivity extends AppCompatActivity implements LoaderMana
     }
 
     @Override
-    public Loader<Artist[]> onCreateLoader(int id, Bundle args)
-    {
+    public Loader<Artist[]> onCreateLoader(int id, Bundle args) {
         return new ArtistsLoader(this);
     }
 
     @Override
-    public void onLoadFinished(Loader<Artist[]> loader, Artist[] data)
-    {
+    public void onLoadFinished(Loader<Artist[]> loader, Artist[] data) {
         showContent(data);
     }
 
     @Override
-    public void onLoaderReset(Loader<Artist[]> loader)
-    {
+    public void onLoaderReset(Loader<Artist[]> loader) {
 
     }
 
-    private void showProgress()
-    {
+    private void showProgress() {
         progressBar.setVisibility(View.VISIBLE);
         recyclerView.setVisibility(View.GONE);
     }
 
-    private void showContent(Artist[] data)
-    {
+    private void showContent(Artist[] data) {
         progressBar.setVisibility(View.GONE);
         recyclerView.setVisibility(View.VISIBLE);
 
