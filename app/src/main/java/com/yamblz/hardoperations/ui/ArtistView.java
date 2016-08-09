@@ -6,6 +6,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -15,7 +16,9 @@ import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
@@ -42,6 +45,24 @@ public class ArtistView extends View
     private Bitmap posterBitmap;
     private ImageLoadTarget imageLoadTarget;
     private Picasso picasso;
+
+    private Palette palette;
+
+    private Paint imageRectPaint, bitmapPaint, rectPaint;
+
+    private int posterLRPosterPadding;
+    private int posterTopPadding;
+    private int imageHeight;
+    private int textColor;
+    private int posterTextMargin;
+    private int textLRPadding;
+    private int titleDescMargin;
+    private int width;
+
+    private StaticLayout titleStaticLayout;
+    private StaticLayout descriptionStaticLayout;
+
+    private float titleTextHeight;
 
     public ArtistView(Context context)
     {
@@ -71,6 +92,24 @@ public class ArtistView extends View
 
     private void init(@NonNull Context context)
     {
+
+        Point size = new Point();
+        ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
+        .getSize(size);
+
+        width = size.x;
+
+        posterLRPosterPadding = getResources().getDimensionPixelOffset(R.dimen.artist_card_top_padding);
+        posterTopPadding = getResources().getDimensionPixelOffset(R.dimen.artist_card_top_padding);
+        imageHeight = getResources().getDimensionPixelOffset(R.dimen.poster_height);
+
+        bitmapPaint = new Paint();
+        bitmapPaint.setAntiAlias(true);
+        bitmapPaint.setFilterBitmap(true);
+        bitmapPaint.setDither(true);
+
+        palette = getPalette();
+
         picasso = Picasso.with(context);
 
         Resources resources = getResources();
@@ -90,6 +129,21 @@ public class ArtistView extends View
         descriptionPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         descriptionPaint.setTextSize(descriptionFontSize);
         descriptionPaint.setColor(defaultTextColor);
+
+        imageRectPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        imageRectPaint.setColor(WHITE_COLOR);
+
+        rectPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        rectPaint.setColor(palette.getLightVibrantColor(
+                defaultBackgroundColor));
+
+        textColor = palette.getDarkMutedColor(defaultTextColor);
+        titlePaint.setColor(palette.getDarkMutedColor(textColor));
+        descriptionPaint.setColor(textColor);
+
+        posterTextMargin = getResources().getDimensionPixelOffset(R.dimen.artist_card_poster_text_margin);
+        textLRPadding = getResources().getDimensionPixelOffset(R.dimen.artist_card_lr_text_padding);
+        titleDescMargin = getResources().getDimensionPixelOffset(R.dimen.artist_card_title_desc_margin);
     }
 
     public void setArtist(Artist artist)
@@ -105,77 +159,68 @@ public class ArtistView extends View
         }
         imageLoadTarget = new ImageLoadTarget();
         picasso.load(artist.getCover().getBigImageUrl()).into(imageLoadTarget);
+
+        titleTextHeight = getTextHeight(artist.getName(), width, titlePaint);
+
+        titleStaticLayout = getStaticLayout(artist.getName(),
+                width - textLRPadding,
+                titlePaint);
+
+        descriptionStaticLayout = getStaticLayout(getArtistDescription(),
+                width - textLRPadding,
+                descriptionPaint);
+
     }
 
     private void setPosterBitmap(Bitmap bitmap)
     {
-        posterBitmap = bitmap;
+        if(bitmap != null) {
+
+            posterBitmap = BitmapUtils.fitToCenterBitmap(bitmap,
+                    getWidth() - (2 * posterLRPosterPadding),
+                    imageHeight);
+        } else {
+            if (posterBitmap != null && !posterBitmap.isRecycled()) {
+                posterBitmap.recycle();
+            }
+        }
         invalidate();
     }
 
     @Override
-    protected void onDraw(Canvas canvas)
-    {
+    protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        if (artist == null)
-        {
+        if (artist == null) {
             return;
         }
 
         //Draw background
-        Palette palette = getPalette();
-        canvas.drawRect(0, 0, getWidth(), getHeight(), getRectPaint(palette.getLightVibrantColor(
-                defaultBackgroundColor)));
-
-        int textColor = palette.getDarkMutedColor(defaultTextColor);
-        titlePaint.setColor(palette.getDarkMutedColor(textColor));
-        descriptionPaint.setColor(textColor);
+        canvas.drawRect(0, 0, getWidth(), getHeight(), rectPaint);
 
         //draw poster
-        int posterLRPosterPadding = getResources().getDimensionPixelOffset(R.dimen.artist_card_top_padding);
-        int posterTopPadding = getResources().getDimensionPixelOffset(R.dimen.artist_card_top_padding);
-
-        int imageHeight = getResources().getDimensionPixelOffset(R.dimen.poster_height);
-        if (posterBitmap == null)
-        {
+        if (posterBitmap == null || posterBitmap.isRecycled()) {
             canvas.drawRect(posterLRPosterPadding,
                             posterTopPadding,
                             getWidth() - posterLRPosterPadding,
                             imageHeight,
-                            getRectPaint(WHITE_COLOR));
-        }
-        else
-        {
-            Bitmap scaledBitmap = BitmapUtils.fitToCenterBitmap(posterBitmap,
-                                                                getWidth() - (2 * posterLRPosterPadding),
-                                                                imageHeight);
-            canvas.drawBitmap(scaledBitmap,
+                            imageRectPaint);
+        } else {
+            canvas.drawBitmap(posterBitmap,
                               posterLRPosterPadding,
                               posterTopPadding,
-                              getBitmapPaint());
-            scaledBitmap.recycle();
+                              bitmapPaint);
         }
 
-        //draw title
-        float titleTextHeight = getTextHeight(artist.getName(), getWidth(), titlePaint);
-        int posterTextMargin = getResources().getDimensionPixelOffset(R.dimen.artist_card_poster_text_margin);
-        int textLRPadding = getResources().getDimensionPixelOffset(R.dimen.artist_card_lr_text_padding);
+        width = getWidth();
 
-        StaticLayout titleStaticLayout = getStaticLayout(artist.getName(),
-                                                         getWidth() - textLRPadding,
-                                                         titlePaint);
+        //draw title
         canvas.save();
         canvas.translate(textLRPadding, posterTopPadding + imageHeight + posterTextMargin);
         titleStaticLayout.draw(canvas);
         canvas.restore();
 
         //draw description
-        int titleDescMargin = getResources().getDimensionPixelOffset(R.dimen.artist_card_title_desc_margin);
-
-        StaticLayout descriptionStaticLayout = getStaticLayout(getArtistDescription(),
-                                                               getWidth() - textLRPadding,
-                                                               descriptionPaint);
         canvas.save();
         canvas.translate(textLRPadding,
                          posterTopPadding + imageHeight + posterTextMargin + titleTextHeight + titleDescMargin);
@@ -223,23 +268,8 @@ public class ArtistView extends View
         {
             text = "";
         }
+
         return new StaticLayout(text, textPaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 1, false);
-    }
-
-    private Paint getRectPaint(int color)
-    {
-        Paint rectPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        rectPaint.setColor(color);
-        return rectPaint;
-    }
-
-    private Paint getBitmapPaint()
-    {
-        Paint bitmapPaint = new Paint();
-        bitmapPaint.setAntiAlias(true);
-        bitmapPaint.setFilterBitmap(true);
-        bitmapPaint.setDither(true);
-        return bitmapPaint;
     }
 
     private String getArtistDescription()
