@@ -23,14 +23,12 @@ import com.yamblz.hardoperations.R;
 import com.yamblz.hardoperations.model.Artist;
 import com.yamblz.hardoperations.utils.BitmapUtils;
 
-import java.util.Collections;
 
 /**
  * Created by i-sergeev on 06.07.16
  */
 public class ArtistView extends View {
     private static final int WHITE_COLOR = 0xFFFFFF;
-    private static final int PALETTE_POPULATION = 100;
 
     private TextPaint titlePaint;
     private TextPaint descriptionPaint;
@@ -46,7 +44,6 @@ public class ArtistView extends View {
     int posterTopPadding;
     int imageHeight;
 
-    private Palette palette;
     private Paint rectPaint;
     private Paint bitmapPaint;
     int posterTextMargin;
@@ -100,7 +97,6 @@ public class ArtistView extends View {
         descriptionPaint.setTextSize(descriptionFontSize);
         descriptionPaint.setColor(defaultTextColor);
 
-        palette = getDefaultPalette();
 
         rectPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         bitmapPaint = new Paint();
@@ -135,26 +131,18 @@ public class ArtistView extends View {
         if (artist == null) {
             return;
         }
-        //Draw background
-        canvas.drawRect(0, 0, getWidth(), getHeight(), rectPaint);
-        //draw poster
         if (posterBitmap == null) {
-            canvas.drawRect(posterLRPosterPadding,
-                    posterTopPadding,
-                    getWidth() - posterLRPosterPadding,
-                    imageHeight,
-                    rectPaint);
+            canvas.drawRect(0, 0, getWidth(), getHeight(), rectPaint);
         } else {
-            Bitmap scaledBitmap = BitmapUtils.fitToCenterBitmap(posterBitmap,
-                    getWidth() - (2 * posterLRPosterPadding),
-                    imageHeight);
-            canvas.drawBitmap(scaledBitmap,
-                    posterLRPosterPadding,
-                    posterTopPadding,
-                    bitmapPaint);
-            scaledBitmap.recycle();
+            int height = getHeight();
+            int width = getWidth();
+            int left = width - posterLRPosterPadding;
+            canvas.drawRect(0, 0, posterLRPosterPadding, height, rectPaint);
+            canvas.drawRect(left, 0, width, height, rectPaint);
+            canvas.drawRect(posterLRPosterPadding, 0, left, posterTopPadding, rectPaint);
+            canvas.drawRect(posterLRPosterPadding, posterTopPadding + imageHeight, left, height, rectPaint);
+            canvas.drawBitmap(posterBitmap, posterLRPosterPadding, posterTopPadding, bitmapPaint);
         }
-        //draw title
         canvas.save();
         canvas.translate(textLRPadding, posterTopPadding + imageHeight + posterTextMargin);
         titleStaticLayout.draw(canvas);
@@ -176,12 +164,10 @@ public class ArtistView extends View {
         titleStaticLayout = getStaticLayout(artist.getName(), width - textLRPadding, titlePaint);
         descriptionStaticLayout = getStaticLayout(getArtistDescription(), width - textLRPadding, descriptionPaint);
 
-
         int height = 0;
         height += getResources().getDimensionPixelOffset(R.dimen.poster_height);
         height += titleStaticLayout.getHeight();
         height += descriptionStaticLayout.getHeight();
-
         height += getResources().getDimensionPixelOffset(R.dimen.artist_card_top_padding);
         height += getResources().getDimensionPixelOffset(R.dimen.artist_card_bottom_padding);
         height += getResources().getDimensionPixelOffset(R.dimen.artist_card_poster_text_margin);
@@ -223,34 +209,21 @@ public class ArtistView extends View {
         return descriptionText;
     }
 
-    private Palette getPalette() {
-        if (posterBitmap != null && !posterBitmap.isRecycled()) {
-            return Palette.from(posterBitmap).generate();
-        } else {
-            return palette;
-        }
-    }
-
-    @NonNull
-    private static Palette getDefaultPalette() {
-        Palette.Swatch swatch = new Palette.Swatch(WHITE_COLOR, PALETTE_POPULATION);
-        return Palette.from(Collections.singletonList(swatch));
-    }
 
     private final class ImageLoadTarget implements Target {
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
             imageLoadTarget = null;
-            posterBitmap = bitmap;
-
-            palette = getPalette();
-            rectPaint.setColor(palette.getLightVibrantColor(
-                    defaultBackgroundColor));
-
+            Palette palette = Palette.from(bitmap).generate();
+            rectPaint.setColor(palette.getLightVibrantColor(defaultBackgroundColor));
+            posterBitmap = BitmapUtils.fitToCenterBitmap(bitmap, getWidth() - (2 * posterLRPosterPadding), imageHeight);
             int textColor = palette.getDarkMutedColor(defaultTextColor);
             titlePaint.setColor(palette.getDarkMutedColor(textColor));
             descriptionPaint.setColor(textColor);
 
+            posterBitmap = BitmapUtils.fitToCenterBitmap(posterBitmap,
+                    getWidth() - (2 * posterLRPosterPadding),
+                    imageHeight);
             invalidate();
         }
 
