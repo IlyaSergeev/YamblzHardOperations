@@ -121,9 +121,6 @@ public class ArtistView extends View {
     public void setArtist(Artist artist) {
         this.artist = artist;
 
-        //invalidate();
-        //requestLayout();
-
         if (imageLoadTarget != null) {
             Picasso.with(getContext()).cancelRequest(imageLoadTarget);
             imageLoadTarget = null;
@@ -144,6 +141,9 @@ public class ArtistView extends View {
         descriptionText += "\n" + getResources().getQuantityString(R.plurals.artistTracks,
                 artist.getTracksCount(),
                 artist.getTracksCount());
+
+        invalidate();
+        requestLayout();
     }
 
     private void setPosterBitmap(Bitmap bitmap) {
@@ -152,7 +152,6 @@ public class ArtistView extends View {
                     getWidth() - (2 * posterLRPosterPadding),
                     imageHeight);
             invalidate();
-            requestLayout();
         } else {
             posterBitmap = null;
         }
