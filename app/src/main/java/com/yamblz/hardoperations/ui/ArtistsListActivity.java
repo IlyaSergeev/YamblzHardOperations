@@ -33,6 +33,8 @@ public class ArtistsListActivity extends AppCompatActivity implements LoaderMana
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_artists_list);
 
+        getWindow().setBackgroundDrawable(null);
+
         ButterKnife.bind(this);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
